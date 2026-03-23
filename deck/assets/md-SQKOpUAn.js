@@ -1,7 +1,0 @@
-import{_ as r}from"./slidev/CodeBlockWrapper.vue_vue_type_script_setup_true_lang-DQJkTCxH.js";import{o as p,b as d,w as n,g as s,d as c,m,ad as a,v as u,x as f,T as t}from"./modules/vue-DWAiZsTn.js";import{I as g}from"./slidev/default-ft5fksQl.js";import{u as k,f as _}from"./slidev/context-BDJq8sxI.js";import"./modules/unplugin-icons-DEL0JzfW.js";import"./index-2sROCp1U.js";import"./modules/shiki-TZ4Harwa.js";const y={__name:"slides.md__slidev_3",setup(x){const{$clicksContext:l,$frontmatter:i}=k();return l.setup(),(h,e)=>{const o=r;return p(),d(g,u(f(t(_)(t(i),2))),{default:n(()=>[e[1]||(e[1]=s("h1",null,"Architecture",-1)),c(o,m({},{title:"",ranges:[]}),{default:n(()=>[...e[0]||(e[0]=[s("pre",{class:"shiki shiki-themes vitesse-dark vitesse-light slidev-code",style:{"--shiki-dark":"#dbd7caee","--shiki-light":"#393a34","--shiki-dark-bg":"#121212","--shiki-light-bg":"#ffffff"}},[s("code",{class:"language-text"},[s("span",{class:"line"},[s("span",null,"Protocol CLIs build tx")]),a(`
-`),s("span",{class:"line"},[s("span",null,"          ↓")]),a(`
-`),s("span",{class:"line"},[s("span",null,"  OWS signs tx/message")]),a(`
-`),s("span",{class:"line"},[s("span",null,"          ↓")]),a(`
-`),s("span",{class:"line"},[s("span",null,"MoonPay broadcasts signed tx")]),a(`
-`),s("span",{class:"line"},[s("span",null,"          ↓")]),a(`
-`),s("span",{class:"line"},[s("span",null,"        chain")])])],-1)])]),_:1},16),e[2]||(e[2]=s("div",{class:"mt-4 muted"},"Clean boundaries. No signer logic in protocol CLIs.",-1))]),_:1},16)}}};export{y as default};
