@@ -1,0 +1,1 @@
+:root{--syn-bg: #fafafa;--syn-text: #111;--syn-muted: #666;--syn-border: #e5e5e5}.slidev-layout{background:var(--syn-bg);color:var(--syn-text)}.hero-gradient{border:1px solid var(--syn-border);border-radius:8px;background:linear-gradient(135deg,#667eea2e,#764ba224,#4facfe1f);padding:1.25rem}.muted{color:var(--syn-muted)}.code-tight pre{font-size:.78rem}

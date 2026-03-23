@@ -1,0 +1,36 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="round">
+      <rect width="1024" height="1024" rx="220" ry="220" />
+    </clipPath>
+    <filter id="blur-xl" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="90" />
+    </filter>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 512) rotate(90) scale(700)">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F8F8F8"/>
+    </radialGradient>
+    <linearGradient id="s-grad" x1="360" y1="250" x2="700" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111111"/>
+      <stop offset="1" stop-color="#333333"/>
+    </linearGradient>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+
+    <!-- soft gradient mesh blobs -->
+    <circle cx="250" cy="220" r="210" fill="#8B6DFF" fill-opacity="0.45" filter="url(#blur-xl)"/>
+    <circle cx="760" cy="250" r="220" fill="#5DAEFF" fill-opacity="0.42" filter="url(#blur-xl)"/>
+    <circle cx="300" cy="760" r="220" fill="#FF9D7A" fill-opacity="0.34" filter="url(#blur-xl)"/>
+    <circle cx="780" cy="740" r="200" fill="#73E2B1" fill-opacity="0.30" filter="url(#blur-xl)"/>
+    <circle cx="560" cy="520" r="170" fill="#FFD27A" fill-opacity="0.18" filter="url(#blur-xl)"/>
+
+    <!-- subtle glass plate for legibility -->
+    <rect x="220" y="220" width="584" height="584" rx="160" fill="white" fill-opacity="0.18" stroke="white" stroke-opacity="0.28"/>
+
+    <!-- clean S mark -->
+    <path d="M651.5 331C618.2 301 571.7 284 517.5 284C416.2 284 342 339.1 342 421.5C342 488 388.5 528 477 548L553 565C603.9 576.4 628 592.3 628 622C628 659.1 590.5 684 530.5 684C469 684 416.5 663.4 376.5 624.5" stroke="url(#s-grad)" stroke-width="94" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M371.5 700C407.1 733.3 461.8 753 524.5 753C630.2 753 705 695.5 705 609.5C705 540.3 654.2 501 563 481.5L487 464.5C438.2 453.6 419 437.8 419 409C419 373.2 454.8 349 511.5 349C565.4 349 610 367.7 644.5 399.5" stroke="url(#s-grad)" stroke-width="94" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

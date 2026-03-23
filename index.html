@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synthesis — The Execution Layer for AI Agents</title>
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="./favicon-64.png">
+<link rel="apple-touch-icon" sizes="512x512" href="./synthesis-icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafafa;
+    --bg-dark: #111;
+    --surface: #fff;
+    --border: #e5e5e5;
+    --text: #111;
+    --text-secondary: #666;
+    --text-tertiary: #999;
+    --accent: #0a0a0a;
+    --accent-blue: #2563eb;
+    --success: #16a34a;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', -apple-system, system-ui, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+
+  .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+  .container-wide { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: #555; letter-spacing: 0.6px; text-transform: uppercase;
+    border: 1px solid var(--border); background: rgba(255,255,255,0.82);
+    padding: 7px 10px; border-radius: 4px;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,250,250,0.85); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+  }
+  nav .inner {
+    max-width: 960px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav .logo {
+    font-family: var(--mono); font-size: 15px; font-weight: 600;
+    color: var(--text); text-decoration: none; letter-spacing: -0.5px;
+    display: inline-flex; align-items: center; gap: 9px;
+  }
+  nav .logo img { width: 18px; height: 18px; display: block; }
+  nav .links { display: flex; gap: 28px; }
+  nav .links a {
+    font-size: 14px; color: var(--text-secondary);
+    text-decoration: none; transition: color 0.2s;
+  }
+  nav .links a:hover { color: var(--text); }
+
+  /* ── Gradient mesh canvas ── */
+  .gradient-canvas {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 0; opacity: 0.45;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 140px 24px 100px; text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .hero > *:not(.gradient-canvas) { position: relative; z-index: 1; }
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    color: var(--text-tertiary); letter-spacing: 0.5px;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: clamp(36px, 7vw, 64px); font-weight: 800;
+    letter-spacing: -2px; line-height: 1.1;
+    max-width: 700px; margin: 0 auto;
+  }
+  .hero h1 .thin { font-weight: 300; color: var(--text-secondary); }
+  .hero .sub {
+    font-size: clamp(16px, 2.5vw, 20px); color: var(--text-secondary);
+    max-width: 520px; margin: 24px auto 0; line-height: 1.6; font-weight: 400;
+  }
+  .hero .install {
+    margin-top: 40px; display: inline-flex; align-items: center; gap: 0;
+    font-family: var(--mono); font-size: 14px;
+    padding: 12px 24px; border-radius: 4px;
+    background: var(--bg-dark); color: #fff;
+    cursor: pointer; transition: all 0.2s; border: none;
+  }
+  .hero .install:hover { background: #333; }
+  .hero .install .arrow { opacity: 0.5; }
+  .hero .secondary-links {
+    margin-top: 16px; display: flex; gap: 20px; justify-content: center;
+  }
+  .hero .secondary-links a {
+    font-size: 14px; color: var(--text-tertiary);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .hero .secondary-links a:hover { color: var(--text); }
+
+  .hero-utility {
+    margin-top: 26px; display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  }
+  .hero-utility a { text-decoration: none; }
+
+  /* ── Thesis section ── */
+  .thesis {
+    padding: 100px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .thesis-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 60px; align-items: start;
+  }
+  @media (max-width: 640px) { .thesis-grid { grid-template-columns: 1fr; gap: 40px; } }
+  .thesis-left h2 {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.5px;
+    line-height: 1.2; margin-bottom: 20px;
+  }
+  .thesis-left p {
+    font-size: 16px; line-height: 1.7; color: var(--text-secondary);
+  }
+  .thesis-right {
+    display: flex; flex-direction: column; gap: 28px;
+  }
+  .thesis-point {
+    border-left: 2px solid var(--border); padding-left: 20px;
+  }
+  .thesis-point.active { border-left-color: var(--text); }
+  .thesis-point h3 {
+    font-size: 15px; font-weight: 600; margin-bottom: 4px;
+  }
+  .thesis-point p {
+    font-size: 14px; color: var(--text-secondary); line-height: 1.5;
+  }
+
+  /* ── Terminal (dark, infrastructure feel) ── */
+  .term-section {
+    padding: 80px 24px;
+    background: var(--bg-dark);
+    border-bottom: 1px solid #222;
+  }
+  .term-section .section-label {
+    font-family: var(--mono); font-size: 12px;
+    color: #555; letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .term-section h2 {
+    font-size: clamp(24px, 4vw, 36px); font-weight: 700;
+    color: #fff; letter-spacing: -0.5px; margin-bottom: 8px;
+  }
+  .term-section .desc {
+    font-size: 16px; color: #777; line-height: 1.6;
+    max-width: 520px; margin-bottom: 40px;
+  }
+
+  .term {
+    width: 100%; border-radius: 4px; overflow: hidden;
+    background: #0a0a0a; border: 1px solid #222;
+    margin-bottom: 16px;
+  }
+  .term-bar {
+    padding: 10px 14px; display: flex; gap: 6px; align-items: center;
+    background: #141414; border-bottom: 1px solid #1a1a1a;
+  }
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; background: #333; }
+  .term-label {
+    margin-left: auto; font-family: var(--mono); font-size: 11px; color: #444;
+  }
+  .term-body {
+    padding: 18px 20px; font-family: var(--mono); font-size: 13px;
+    line-height: 1.85; color: #bbb; min-height: 60px;
+    height: 260px; overflow-y: auto;
+  }
+  .term-body .cursor {
+    display: inline-block; width: 7px; height: 15px;
+    background: #fff; animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .t-dim { color: #555; }
+  .t-cmd { color: #fff; font-weight: 600; }
+  .t-flag { color: #888; }
+  .t-val { color: #aaa; }
+  .t-ok { color: #4ade80; }
+  .t-status { color: #fbbf24; }
+  .t-key { color: #888; }
+  .t-str { color: #4ade80; }
+  .t-num { color: #fb923c; }
+  .t-prompt { color: #555; }
+
+  .replay-btn {
+    font-family: var(--mono); font-size: 11px;
+    color: #444; cursor: pointer; transition: color 0.2s;
+    background: none; border: none; padding: 4px 0;
+  }
+  .replay-btn:hover { color: #888; }
+
+  .term-pair { margin-bottom: 48px; }
+  .term-pair-label {
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    color: #ddd; margin-bottom: 6px;
+  }
+  .term-pair-desc {
+    font-size: 14px; color: #666; margin-bottom: 16px; line-height: 1.5;
+  }
+
+  /* ── Demo tabs ── */
+  .demo-tabs {
+    display: flex; gap: 0; border-bottom: 1px solid #222; margin-bottom: 32px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .demo-tab {
+    font-family: var(--mono); font-size: 12px;
+    padding: 12px 18px; color: #555;
+    cursor: pointer; transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none;
+  }
+  .demo-tab:hover { color: #999; }
+  .demo-tab.active { color: #fff; border-bottom-color: #fff; }
+
+  .demo-panel { display: none; }
+  .demo-panel.active { display: block; }
+  .demo-panel-header { margin-bottom: 20px; }
+  .demo-panel-header h3 {
+    font-family: var(--mono); font-size: 15px; font-weight: 600;
+    color: #eee; margin-bottom: 6px;
+  }
+  .demo-panel-header p {
+    font-size: 14px; color: #666; line-height: 1.5; max-width: 560px;
+  }
+
+  /* ── Architecture (light) ── */
+  .arch-section {
+    padding: 100px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .arch-section h2 {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  .arch-section .desc {
+    font-size: 16px; color: var(--text-secondary); line-height: 1.6;
+    max-width: 520px; margin-bottom: 48px;
+  }
+  .arch-diagram {
+    font-family: var(--mono); font-size: 12px; line-height: 1.8;
+    padding: 32px; border-radius: 4px;
+    background: #fff; border: 1px solid var(--border);
+    text-align: center; color: var(--text-tertiary);
+    overflow-x: auto; white-space: pre;
+  }
+  .arch-diagram .hl { color: var(--text); font-weight: 600; }
+  .arch-diagram .ok { color: var(--success); }
+
+  /* Responsive architecture diagram */
+  .arch-visual {
+    padding: 40px 24px; border-radius: 4px;
+    background: #fff; border: 1px solid var(--border);
+  }
+  .arch-flow {
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+    max-width: 560px; margin: 0 auto;
+  }
+  .arch-chip-row {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px;
+  }
+  .arch-chip {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    border: 1px solid var(--border); padding: 7px 10px; border-radius: 4px; color: #555;
+    background: #fafafa;
+  }
+  .arch-step {
+    width: min(100%, 460px);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 14px 16px; background: #fff;
+  }
+  .arch-step .k {
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #888; margin-bottom: 6px;
+  }
+  .arch-step h4 { font-size: 15px; letter-spacing: -0.2px; margin-bottom: 6px; }
+  .arch-step p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .arch-arrow {
+    font-family: var(--mono); color: #999; font-size: 12px; padding: 10px 0;
+  }
+  .arch-io {
+    font-family: var(--mono); font-size: 11px; color: #666;
+    background: #fcfcfc; border: 1px solid var(--border); border-radius: 4px;
+    padding: 7px 10px; margin-top: 10px;
+  }
+
+  .layer-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px; margin-top: 48px;
+  }
+  .layer-card { }
+  .layer-card h3 {
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .layer-card p {
+    font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+  }
+  .layer-card .hint {
+    font-family: var(--mono); font-size: 11px; color: var(--text-tertiary);
+    margin-top: 8px;
+  }
+
+  /* ── Logo rail ── */
+  .logo-rail-wrap {
+    padding: 26px 0 34px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .logo-rail-label {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .logo-rail {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  }
+  .logo-track {
+    display: flex;
+    width: max-content;
+    gap: 18px;
+    animation: logoSlide 26s linear infinite;
+  }
+  @keyframes logoSlide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .logo-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: rgba(255,255,255,0.72);
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+  .logo-mark { display: none; }
+  .logo-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: #444;
+    letter-spacing: -0.2px;
+  }
+
+  /* ── Numbers ── */
+  .numbers {
+    display: flex; gap: 48px; flex-wrap: wrap;
+    padding: 60px 0; border-bottom: 1px solid var(--border);
+    justify-content: center;
+  }
+  .numbers .n { text-align: center; }
+  .numbers .n-val {
+    font-family: var(--mono); font-size: 48px; font-weight: 700;
+    letter-spacing: -2px;
+  }
+  .numbers .n-label {
+    font-size: 13px; color: var(--text-tertiary); margin-top: 4px;
+  }
+
+  /* ── CTA ── */
+  .cta {
+    padding: 120px 24px; text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .cta h2 {
+    font-size: clamp(28px, 5vw, 48px); font-weight: 800;
+    letter-spacing: -1.5px; line-height: 1.15; margin-bottom: 24px;
+  }
+  .cta h2 .thin { font-weight: 300; color: var(--text-secondary); }
+  .cta .install {
+    display: inline-flex; align-items: center; gap: 0;
+    font-family: var(--mono); font-size: 14px;
+    padding: 12px 24px; border-radius: 4px;
+    background: var(--bg-dark); color: #fff;
+    cursor: pointer; border: none; transition: background 0.2s;
+  }
+  .cta .install:hover { background: #333; }
+  .cta .links {
+    margin-top: 16px; display: flex; gap: 20px; justify-content: center;
+  }
+  .cta .links a {
+    font-size: 14px; color: var(--text-tertiary);
+    text-decoration: none;
+  }
+  .cta .links a:hover { color: var(--text); }
+
+  /* ── Footer ── */
+  footer {
+    padding: 40px 24px; text-align: center;
+    font-size: 13px; color: var(--text-tertiary);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="#" class="logo"><img src="./synthesis-icon-simple-centered.svg" alt="Synthesis mark">synthesis</a>
+    <div class="links">
+      <a href="https://github.com/winstain/synthesis-cli">GitHub</a>
+      <a href="https://www.npmjs.com/package/synthesis-cli">npm</a>
+      <a href="#demos">Demos</a>
+      <a href="../demo/dist/index.html">Deck</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <canvas class="gradient-canvas" id="gradient-canvas"></canvas>
+  <div class="hero-eyebrow">synthesis</div>
+  <h1>The superapp<br><span class="thin">for agents.</span></h1>
+  <p class="sub">
+    One install. Every protocol. Tools, skills, and workflows that give agents
+    real powers on-chain.
+  </p>
+  <button class="install" onclick="navigator.clipboard.writeText('npm i -g synthesis-cli')">
+    <span class="arrow">▸</span> npm i -g synthesis-cli
+  </button>
+  <div class="secondary-links">
+    <a href="https://github.com/winstain/synthesis-cli">View source →</a>
+    <a href="#demos">Watch demos →</a>
+    <a href="../demo/dist/index.html">View deck →</a>
+  </div>
+  <div class="hero-utility">
+    <a href="../demo/dist/index.html" class="tag">Pitch Deck ↗</a>
+    <span class="tag">Execution: Build tx → OWS sign → MoonPay broadcast</span>
+  </div>
+</div>
+
+<!-- ═══ THESIS ═══ -->
+<div class="thesis">
+  <div class="container">
+    <div class="thesis-grid">
+      <div class="thesis-left">
+        <h2>AI companies build the brains. Who builds the hands?</h2>
+        <p>
+          Foundation models can reason, plan, and generate. But they can't swap tokens, 
+          stake ETH, sign transactions, or interact with protocols. The execution layer 
+          doesn't exist yet. We're building it.
+        </p>
+      </div>
+      <div class="thesis-right">
+        <div class="thesis-point active">
+          <h3>Protocol SDKs are built for humans</h3>
+          <p>They assume a browser, a UI, a clicking hand. Agents need structured inputs and typed outputs.</p>
+        </div>
+        <div class="thesis-point active">
+          <h3>Signing is tangled with execution</h3>
+          <p>Every SDK wants your keys. Agents need clean separation between building transactions and signing them.</p>
+        </div>
+        <div class="thesis-point active">
+          <h3>Multi-step flows are manual</h3>
+          <p>A swap is 5 commands. Staking is 3. Agents need composable workflows, not copy-paste scripts.</p>
+        </div>
+        <div class="thesis-point active">
+          <h3>There's no standard</h3>
+          <p>Every protocol is its own island. Agents need one interface, one install, one contract.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGO RAIL ═══ -->
+<div class="container-wide logo-rail-wrap">
+  <div class="logo-rail-label">Protocols and execution surfaces inside Synthesis</div>
+  <div class="logo-rail">
+    <div class="logo-track">
+      <div class="logo-chip"><span class="logo-mark">U</span><span class="logo-name">uniswap</span></div>
+      <div class="logo-chip"><span class="logo-mark">L</span><span class="logo-name">lido</span></div>
+      <div class="logo-chip"><span class="logo-mark">8</span><span class="logo-name">8004</span></div>
+      <div class="logo-chip"><span class="logo-mark">F</span><span class="logo-name">filecoin</span></div>
+      <div class="logo-chip"><span class="logo-mark">M</span><span class="logo-name">moonpay</span></div>
+      <div class="logo-chip"><span class="logo-mark">O</span><span class="logo-name">ows</span></div>
+      <div class="logo-chip"><span class="logo-mark">S</span><span class="logo-name">skills</span></div>
+      <div class="logo-chip"><span class="logo-mark">W</span><span class="logo-name">workflows</span></div>
+      <div class="logo-chip"><span class="logo-mark">U</span><span class="logo-name">uniswap</span></div>
+      <div class="logo-chip"><span class="logo-mark">L</span><span class="logo-name">lido</span></div>
+      <div class="logo-chip"><span class="logo-mark">8</span><span class="logo-name">8004</span></div>
+      <div class="logo-chip"><span class="logo-mark">F</span><span class="logo-name">filecoin</span></div>
+      <div class="logo-chip"><span class="logo-mark">M</span><span class="logo-name">moonpay</span></div>
+      <div class="logo-chip"><span class="logo-mark">O</span><span class="logo-name">ows</span></div>
+      <div class="logo-chip"><span class="logo-mark">S</span><span class="logo-name">skills</span></div>
+      <div class="logo-chip"><span class="logo-mark">W</span><span class="logo-name">workflows</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NUMBERS ═══ -->
+<div class="container-wide">
+  <div class="numbers">
+    <div class="n"><div class="n-val">6</div><div class="n-label">Protocol CLIs</div></div>
+    <div class="n"><div class="n-val">5</div><div class="n-label">Built-in Workflows</div></div>
+    <div class="n"><div class="n-val">7</div><div class="n-label">Agent Skills</div></div>
+    <div class="n"><div class="n-val">1</div><div class="n-label">Install</div></div>
+  </div>
+</div>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<div class="arch-section">
+  <div class="container">
+    <h2>Three layers. Clean boundaries.</h2>
+    <p class="desc">
+      Protocol CLIs build unsigned transactions. Workflows compose them.
+      Signers sign them. OWS signs. MoonPay broadcasts. Keys never cross boundaries.
+    </p>
+
+    <div class="arch-visual">
+      <div class="arch-flow">
+        <div class="arch-chip-row">
+          <div class="arch-chip">synth workflows</div>
+          <div class="arch-chip">uniswap · lido · 8004 · filecoin</div>
+        </div>
+
+        <div class="arch-step">
+          <div class="k">Step 1 · Build tx</div>
+          <h4>Protocol CLIs produce unsigned transaction JSON</h4>
+          <p>Pure execution planning only. No keys, no signatures, no hidden signer state.</p>
+          <div class="arch-io">output: { to, data, value, chainId }</div>
+        </div>
+
+        <div class="arch-arrow">↓ handoff unsigned tx</div>
+
+        <div class="arch-step">
+          <div class="k">Step 2 · OWS sign</div>
+          <h4>OWS signs with isolated key custody</h4>
+          <p>Synthesis hands off structured tx data. OWS returns a signed payload, with clear boundary ownership.</p>
+          <div class="arch-io">output: signedTx</div>
+        </div>
+
+        <div class="arch-arrow">↓ handoff signed payload</div>
+
+        <div class="arch-step">
+          <div class="k">Step 3 · MoonPay broadcast</div>
+          <h4>MoonPay submits transaction to chain</h4>
+          <p>Network broadcast is delegated to MoonPay CLI/API, keeping transaction creation and signing layers cleanly separated.</p>
+          <div class="arch-io">output: txHash + broadcast status</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 64px; margin-bottom: 16px;">
+      <h3 style="font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 6px;">Probabilistic → Deterministic</h3>
+      <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.6; max-width: 560px;">Anthropic introduced skills — markdown files that teach agents what to do. But skills are probabilistic. The agent interprets them, improvises, and maybe gets it right. Synthesis adds the next layer: <strong style="color: var(--text);">workflows turn hand-wavy instructions into deterministic, executable formulas.</strong> Same input, same commands, same output. Every time.</p>
+    </div>
+
+    <div class="layer-grid" style="margin-top: 32px;">
+      <div class="layer-card">
+        <h3 style="color: var(--text-tertiary); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; font-weight: 500;">Layer 1</h3>
+        <h3>Tools</h3>
+        <p>Standalone protocol CLIs. Each emits structured JSON, has a built-in MCP server, and knows nothing about signing. The raw building blocks.</p>
+        <div class="hint">synth uniswap · synth lido · synth 8004</div>
+      </div>
+      <div class="layer-card">
+        <h3 style="color: var(--text-tertiary); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; font-weight: 500;">Probabilistic</h3>
+        <h3>Skills</h3>
+        <p>Markdown that teaches agents how to compose tools. The agent reads, interprets, and improvises. Good for exploration. Not reliable enough for production.</p>
+        <div class="hint">synth skills · synth skills show uniswap</div>
+      </div>
+      <div class="layer-card">
+        <h3 style="color: var(--text-tertiary); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; font-weight: 500;">Deterministic</h3>
+        <h3>Workflows</h3>
+        <p>When a skill's composition proves itself, it hardens into a workflow — exact commands, exact order, typed state envelope. Plan mode verifies before execution. No interpretation needed.</p>
+        <div class="hint">synth run uniswap-swap --plan</div>
+      </div>
+      <div class="layer-card">
+        <h3 style="color: var(--text-tertiary); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; font-weight: 500;">Signing Layer</h3>
+        <h3>OWS</h3>
+        <p>Keys stay encrypted at rest. Workflows serialize unsigned tx hex for handoff. Protocol CLIs never see secrets. Clean separation at every boundary.</p>
+        <div class="hint">ows sign tx · ows sign send-tx</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DEMOS ═══ -->
+<div class="term-section" id="demos">
+  <div class="container">
+    <div class="section-label">Live demos</div>
+    <h2>See it work.</h2>
+    <p class="desc">Every terminal auto-plays real commands and output. These are the actual CLI surfaces.</p>
+
+    <div class="demo-tabs">
+      <button class="demo-tab active" onclick="switchDemo('swap-tokens', this)">Swap tokens</button>
+      <button class="demo-tab" onclick="switchDemo('stake-eth', this)">Stake ETH</button>
+      <button class="demo-tab" onclick="switchDemo('register-agent', this)">Register agent</button>
+      <button class="demo-tab" onclick="switchDemo('check-environment', this)">Check environment</button>
+    </div>
+
+    <div class="demo-panel active" data-demo="swap-tokens">
+      <div class="demo-panel-header">
+        <h3>Swap tokens on Polygon (agent-mediated)</h3>
+        <p>Operator states the intent, Agent confirms the execution plan, then runs a concrete <code>synth</code> command and returns the outcome.</p>
+      </div>
+      <div class="term" id="demo-swap-tokens">
+        <div class="term-bar"><div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div><span class="term-label">swap · polygon</span></div>
+        <div class="term-body"></div>
+      </div>
+      <button class="replay-btn" onclick="replayDemo('swap-tokens')">↻ replay</button>
+    </div>
+
+    <div class="demo-panel" data-demo="stake-eth">
+      <div class="demo-panel-header">
+        <h3>Stake ETH with Lido workflow</h3>
+        <p>Same terminal pattern: operator intent, Agent orchestration message, command execution, and concise result.</p>
+      </div>
+      <div class="term" id="demo-stake-eth">
+        <div class="term-bar"><div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div><span class="term-label">stake · mainnet</span></div>
+        <div class="term-body"></div>
+      </div>
+      <button class="replay-btn" onclick="replayDemo('stake-eth')">↻ replay</button>
+    </div>
+
+    <div class="demo-panel" data-demo="register-agent">
+      <div class="demo-panel-header">
+        <h3>Register on-chain agent identity</h3>
+        <p>The Agent coordinates an ERC-8004 registration flow from plain operator intent to transaction output.</p>
+      </div>
+      <div class="term" id="demo-register-agent">
+        <div class="term-bar"><div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div><span class="term-label">erc-8004</span></div>
+        <div class="term-body"></div>
+      </div>
+      <button class="replay-btn" onclick="replayDemo('register-agent')">↻ replay</button>
+    </div>
+
+    <div class="demo-panel" data-demo="check-environment">
+      <div class="demo-panel-header">
+        <h3>Check environment health before execution</h3>
+        <p>Agent runs an environment check and reports protocol/CLI readiness in a compact terminal transcript.</p>
+      </div>
+      <div class="term" id="demo-check-environment">
+        <div class="term-bar"><div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div><span class="term-label">environment</span></div>
+        <div class="term-body"></div>
+      </div>
+      <button class="replay-btn" onclick="replayDemo('check-environment')">↻ replay</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ECOSYSTEM ═══ -->
+<div class="thesis" style="border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div class="thesis-grid">
+      <div class="thesis-left">
+        <h2>The platform grows through composition.</h2>
+        <p>
+          Synthesis isn't a closed system. Every protocol CLI anyone builds plugs into
+          every workflow that already exists. New CLIs unlock new compositions.
+          The more tools, the more powerful every agent becomes.
+        </p>
+        <p style="margin-top: 16px; color: var(--text-secondary);">
+          Today: contribute via GitHub PR.<br>
+          Tomorrow: a workflow registry where agents discover and compose tools they've never seen before.
+        </p>
+      </div>
+      <div class="thesis-right">
+        <div class="thesis-point active">
+          <h3>1. Build a CLI</h3>
+          <p>Standalone npm package. Structured JSON output, unsigned tx contract, built-in MCP server. Signer-agnostic.</p>
+        </div>
+        <div class="thesis-point active">
+          <h3>2. Add a skill</h3>
+          <p>Markdown that teaches agents when and how to use your tool. What inputs it needs, what outputs to expect, how it composes.</p>
+        </div>
+        <div class="thesis-point active">
+          <h3>3. Create a workflow</h3>
+          <p>Compose your CLI with others into a multi-step flow. Plan mode, run mode, typed state envelope. It joins the registry.</p>
+        </div>
+        <div class="thesis-point active">
+          <h3>4. Open a PR</h3>
+          <p>Add your route, your skill, your workflow. Every new protocol makes the whole system more valuable.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 48px; padding: 28px; background: #fff; border: 1px solid var(--border); border-radius: 4px; font-family: var(--mono); font-size: 13px; line-height: 1.8; color: var(--text-secondary);">
+      <div style="font-weight: 600; color: var(--text); margin-bottom: 8px;">Adding "aave" to Synthesis:</div>
+      <div><span style="color: var(--text-tertiary);">1.</span> Build <span style="color: var(--text);">aave-cli</span> — standalone, JSON output, MCP server</div>
+      <div><span style="color: var(--text-tertiary);">2.</span> Write <span style="color: var(--text);">skills/aave/SKILL.md</span> — teach agents when to use it</div>
+      <div><span style="color: var(--text-tertiary);">3.</span> Add workflow <span style="color: var(--text);">aave-supply</span> — compose with OWS signing</div>
+      <div><span style="color: var(--text-tertiary);">4.</span> Now <span style="color: var(--text);">synth run aave-supply --plan</span> works for every agent</div>
+      <div style="margin-top: 12px; color: var(--text-tertiary); font-size: 12px;">
+        And every existing workflow can compose with aave-cli too.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CTA ═══ -->
+<div class="cta">
+  <h2>The execution layer<br><span class="thin">is inevitable.</span></h2>
+  <button class="install" onclick="navigator.clipboard.writeText('npm i -g synthesis-cli')">
+    <span>▸</span> npm i -g synthesis-cli
+  </button>
+  <div class="links">
+    <a href="https://github.com/winstain/synthesis-cli">GitHub →</a>
+    <a href="https://www.npmjs.com/package/synthesis-cli">npm →</a>
+  </div>
+</div>
+
+<footer>
+  synthesis · MIT · built by humans and agents
+</footer>
+
+<script>
+const DEMOS = {
+  'swap-tokens': {
+    el: 'demo-swap-tokens',
+    script: [
+      { type: 'out', text: '<span class="t-dim">Operator:</span> Swap 50 USDC to USDT on Polygon from wallet 0xd8dA... and execute now.', pause: 220 },
+      { type: 'out', text: '<span class="t-dim">Agent:</span> Got it — target pair is USDC/USDT on chain 137.', pause: 210 },
+      { type: 'out', text: '<span class="t-status">[plan]</span> Analyzing request…', pause: 220 },
+      { type: 'out', text: '<span class="t-status">[plan]</span> Selecting workflow <span class="t-dim">uniswap-swap</span> with 30 bps slippage guard.', pause: 240 },
+      { type: 'out', text: '<span class="t-status">[execute]</span> Executing via Synthesis…', pause: 210 },
+      { type: 'blank' },
+      { type: 'cmd', text: '$ synth run uniswap-swap --chain-id 137 --wallet 0xd8dA... --token-in 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174 --token-out 0xc2132D05D31c914a87C6611C10748AEb04B58e8F --amount-in 50 --slippage-bps 30', delay: 9 },
+      { type: 'blank' },
+      { type: 'out', text: '  <span class="t-ok">✓</span> quote locked: 50.00 USDC → 49.96 USDT', pause: 170 },
+      { type: 'out', text: '  <span class="t-status">[sign]</span> requesting OWS signature…', pause: 180 },
+      { type: 'out', text: '  <span class="t-ok">✓</span> signature complete', pause: 170 },
+      { type: 'out', text: '  <span class="t-status">[broadcast]</span> submitting via MoonPay…', pause: 170 },
+      { type: 'out', text: '  <span class="t-ok">✓</span> broadcast accepted', pause: 170 },
+      { type: 'out', text: '  <span class="t-dim">txHash:</span> <span class="t-str">0x7c2e...4a1b</span>', pause: 100 }
+    ]
+  },
+  'stake-eth': {
+    el: 'demo-stake-eth',
+    script: [
+      { type: 'out', text: '<span class="t-dim">Operator:</span> Stake 1.25 ETH through Lido for wallet 0xd8dA....', pause: 220 },
+      { type: 'out', text: '<span class="t-dim">Agent:</span> I will route this through the deterministic <span class="t-dim">lido-stake</span> workflow.', pause: 220 },
+      { type: 'out', text: '<span class="t-status">[plan]</span> Checking amount + chain constraints…', pause: 220 },
+      { type: 'out', text: '<span class="t-status">[execute]</span> Building unsigned stake transaction…', pause: 220 },
+      { type: 'blank' },
+      { type: 'cmd', text: '$ synth run lido-stake --amount-eth 1.25 --chain-id 1 --wallet 0xd8dA... --ref lido-mainnet', delay: 14 },
+      { type: 'blank' },
+      { type: 'out', text: '  <span class="t-ok">✓</span> unsigned tx built', pause: 160 },
+      { type: 'out', text: '  <span class="t-status">[sign]</span> sending payload to OWS…', pause: 170 },
+      { type: 'out', text: '  <span class="t-ok">✓</span> OWS signature complete', pause: 160 },
+      { type: 'out', text: '  <span class="t-status">[broadcast]</span> pushing to network…', pause: 170 },
+      { type: 'out', text: '  <span class="t-ok">✓</span> broadcast submitted', pause: 160 },
+      { type: 'out', text: '  <span class="t-dim">receipt:</span> <span class="t-str">0x91ad...bb04</span>', pause: 100 }
+    ]
+  },
+  'register-agent': {
+    el: 'demo-register-agent',
+    script: [
+      { type: 'out', text: '<span class="t-dim">Operator:</span> Register a new agent identity named ops-bot on mainnet.', pause: 220 },
+      { type: 'out', text: '<span class="t-dim">Agent:</span> I’ll use the ERC-8004 registration workflow with your metadata URI.', pause: 220 },
+      { type: 'out', text: '<span class="t-status">[plan]</span> Validating name + URI format…', pause: 220 },
+      { type: 'out', text: '<span class="t-status">[execute]</span> Preparing registerAgent transaction…', pause: 230 },
+      { type: 'blank' },
+      { type: 'cmd', text: '$ synth run agent-register --name ops-bot --uri https://agent.example/ops-bot.json --chain-id 1 --wallet 0xd8dA... --standard erc8004', delay: 12 },
+      { type: 'blank' },
+      { type: 'out', text: '  <span class="t-ok">✓</span> registration payload validated', pause: 160 },
+      { type: 'out', text: '  <span class="t-ok">✓</span> unsigned tx generated (8004)', pause: 160 },
+      { type: 'out', text: '  <span class="t-status">[sign]</span> awaiting signature…', pause: 160 },
+      { type: 'out', text: '  <span class="t-status">[broadcast]</span> publishing transaction…', pause: 160 },
+      { type: 'out', text: '  <span class="t-ok">✓</span> confirmed in mempool', pause: 160 },
+      { type: 'out', text: '  <span class="t-dim">agentId:</span> <span class="t-str">8004:1:0x4f2a...12ce</span>', pause: 100 }
+    ]
+  },
+  'check-environment': {
+    el: 'demo-check-environment',
+    script: [
+      { type: 'out', text: '<span class="t-dim">Operator:</span> Before we run anything, confirm the environment is healthy.', pause: 220 },
+      { type: 'out', text: '<span class="t-dim">Agent:</span> I’ll run diagnostics and report if execution/sign/broadcast is ready.', pause: 230 },
+      { type: 'out', text: '<span class="t-status">[plan]</span> Analyzing toolchain + signer connectivity…', pause: 220 },
+      { type: 'out', text: '<span class="t-status">[execute]</span> Running system check…', pause: 210 },
+      { type: 'blank' },
+      { type: 'cmd', text: '$ synth doctor --checks protocols,ows,network --format table', delay: 20 },
+      { type: 'blank' },
+      { type: 'out', text: '  <span class="t-ok">✓ pass</span> uniswap-cli   <span class="t-dim">v1.2.0</span>', pause: 110 },
+      { type: 'out', text: '  <span class="t-ok">✓ pass</span> lido-cli      <span class="t-dim">v1.2.0</span>', pause: 110 },
+      { type: 'out', text: '  <span class="t-ok">✓ pass</span> ows signer    <span class="t-dim">reachable</span>', pause: 110 },
+      { type: 'out', text: '  <span class="t-ok">✓ pass</span> moonpay relay <span class="t-dim">healthy</span>', pause: 110 },
+      { type: 'blank' },
+      { type: 'out', text: '  <span class="t-dim">summary:</span> <span class="t-ok">ready for plan → sign → broadcast</span>', pause: 90 }
+    ]
+  }
+};
+
+class TermDemo {
+  constructor(id, script) {
+    this.el = document.querySelector(`#${id} .term-body`);
+    this.script = script;
+    this.running = false;
+    this.abortCtrl = null;
+  }
+  async play() {
+    if (this.running && this.abortCtrl) this.abortCtrl.abort();
+    this.abortCtrl = new AbortController();
+    this.running = true;
+    this.el.innerHTML = '';
+    const signal = this.abortCtrl.signal;
+    for (const line of this.script) {
+      if (signal.aborted) return;
+      if (line.type === 'blank') {
+        this.el.innerHTML += '<br>';
+        await this.wait(50, signal);
+        continue;
+      }
+      if (line.type === 'out') {
+        await this.wait(line.pause || 100, signal);
+        if (signal.aborted) return;
+        this.el.innerHTML += `<div>${line.text}</div>`;
+        this.el.scrollTop = this.el.scrollHeight;
+        continue;
+      }
+      if (line.type === 'cmd') {
+        const chars = line.text;
+        const span = document.createElement('div');
+        this.el.appendChild(span);
+        for (let i = 0; i < chars.length; i++) {
+          if (signal.aborted) return;
+          const sofar = chars.slice(0, i + 1);
+          let colored = sofar;
+          if (colored.startsWith('$ ')) {
+            const rest = colored.slice(2);
+            const sp = rest.indexOf(' ');
+            if (sp === -1) {
+              colored = `<span class="t-prompt">$</span> <span class="t-cmd">${rest}</span>`;
+            } else {
+              colored = `<span class="t-prompt">$</span> <span class="t-cmd">${rest.slice(0,sp)}</span>${rest.slice(sp)}`;
+            }
+          }
+          span.innerHTML = colored + '<span class="cursor"></span>';
+          this.el.scrollTop = this.el.scrollHeight;
+          await this.wait(line.delay || 30, signal);
+        }
+        let final = chars;
+        if (final.startsWith('$ ')) {
+          const rest = final.slice(2);
+          const sp = rest.indexOf(' ');
+          if (sp === -1) {
+            final = `<span class="t-prompt">$</span> <span class="t-cmd">${rest}</span>`;
+          } else {
+            final = `<span class="t-prompt">$</span> <span class="t-cmd">${rest.slice(0,sp)}</span>${rest.slice(sp)}`;
+          }
+        }
+        span.innerHTML = final;
+        await this.wait(80, signal);
+      }
+    }
+    this.running = false;
+  }
+  wait(ms, signal) {
+    return new Promise(resolve => {
+      const t = setTimeout(resolve, ms);
+      if (signal) signal.addEventListener('abort', () => { clearTimeout(t); resolve(); }, { once: true });
+    });
+  }
+}
+
+const demos = {};
+for (const [k, c] of Object.entries(DEMOS)) {
+  demos[k] = new TermDemo(c.el, c.script);
+}
+function replayDemo(k) { demos[k].play(); }
+
+function switchDemo(key, tabEl) {
+  // Update tabs
+  document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  // Update panels
+  document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.querySelector(`.demo-panel[data-demo="${key}"]`);
+  if (panel) {
+    panel.classList.add('active');
+    // Auto-play the demo
+    if (demos[key]) demos[key].play();
+  }
+}
+
+// Auto-play the default visible demo (e2e) when it scrolls into view
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      if (id === 'demo-swap-tokens' && demos['swap-tokens'] && !demos['swap-tokens'].running) {
+        demos['swap-tokens'].play();
+      }
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.25 });
+const defaultDemo = document.getElementById('demo-swap-tokens');
+if (defaultDemo) io.observe(defaultDemo);
+
+// ── Stripe-style gradient mesh (WebGL) ──
+(function() {
+  const canvas = document.getElementById('gradient-canvas');
+  if (!canvas) return;
+  const gl = canvas.getContext('webgl');
+  if (!gl) return;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const vsSource = `
+    attribute vec2 a_position;
+    void main() { gl_Position = vec4(a_position, 0.0, 1.0); }
+  `;
+
+  const fsSource = `
+    precision mediump float;
+    uniform float u_time;
+    uniform vec2 u_resolution;
+
+    // Simplex-ish noise
+    vec3 mod289(vec3 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
+    vec2 mod289(vec2 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
+    vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+    float snoise(vec2 v) {
+      const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                         -0.577350269189626, 0.024390243902439);
+      vec2 i = floor(v + dot(v, C.yy));
+      vec2 x0 = v - i + dot(i, C.xx);
+      vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+      vec4 x12 = x0.xyxy + C.xxzz;
+      x12.xy -= i1;
+      i = mod289(i);
+      vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+      vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+      m = m*m; m = m*m;
+      vec3 x = 2.0 * fract(p * C.www) - 1.0;
+      vec3 h = abs(x) - 0.5;
+      vec3 ox = floor(x + 0.5);
+      vec3 a0 = x - ox;
+      m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+      vec3 g;
+      g.x = a0.x * x0.x + h.x * x0.y;
+      g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+      return 130.0 * dot(m, g);
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / u_resolution;
+      float t = u_time * 0.35;
+
+      // Multiple noise layers — faster, more dynamic movement
+      float n1 = snoise(uv * 1.8 + vec2(t * 0.7, t * 0.5));
+      float n2 = snoise(uv * 2.2 + vec2(-t * 0.6, t * 0.8) + 3.0);
+      float n3 = snoise(uv * 1.3 + vec2(t * 0.4, -t * 0.6) + 7.0);
+      float n4 = snoise(uv * 2.5 + vec2(t * 0.9, t * 0.3) + 11.0);
+
+      // Richer, more saturated color blobs
+      vec3 c1 = vec3(0.65, 0.50, 0.95);  // purple
+      vec3 c2 = vec3(0.40, 0.72, 0.95);  // blue
+      vec3 c3 = vec3(0.95, 0.65, 0.50);  // coral
+      vec3 c4 = vec3(0.45, 0.88, 0.70);  // emerald
+      vec3 c5 = vec3(0.95, 0.80, 0.45);  // golden
+
+      float blend1 = smoothstep(-0.3, 0.3, n1);
+      float blend2 = smoothstep(-0.3, 0.3, n2);
+      float blend3 = smoothstep(-0.25, 0.25, n3);
+      float blend4 = smoothstep(-0.3, 0.3, n4);
+
+      vec3 color = mix(c1, c2, blend1);
+      color = mix(color, c3, blend2 * 0.7);
+      color = mix(color, c4, blend3 * 0.6);
+      color = mix(color, c5, blend4 * 0.4);
+
+      // Radial vignette — fade to page background at edges
+      float dist = length(uv - 0.5);
+      float vignette = smoothstep(0.7, 0.2, dist);
+      vec3 bgColor = vec3(0.98, 0.98, 0.98);
+      color = mix(bgColor, color, vignette * 0.7);
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+
+  function createShader(type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.error(gl.getShaderInfoLog(shader));
+      gl.deleteShader(shader);
+      return null;
+    }
+    return shader;
+  }
+
+  const vs = createShader(gl.VERTEX_SHADER, vsSource);
+  const fs = createShader(gl.FRAGMENT_SHADER, fsSource);
+  if (!vs || !fs) return;
+
+  const program = gl.createProgram();
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error(gl.getProgramInfoLog(program));
+    return;
+  }
+
+  const posBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    -1, -1,  1, -1,  -1, 1,
+    -1,  1,  1, -1,   1, 1
+  ]), gl.STATIC_DRAW);
+
+  const posLoc = gl.getAttribLocation(program, 'a_position');
+  const timeLoc = gl.getUniformLocation(program, 'u_time');
+  const resLoc = gl.getUniformLocation(program, 'u_resolution');
+
+  function render(time) {
+    gl.useProgram(program);
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+    gl.uniform1f(timeLoc, time * 0.001);
+    gl.uniform2f(resLoc, canvas.width, canvas.height);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    requestAnimationFrame(render);
+  }
+  requestAnimationFrame(render);
+})();
+</script>
+
+</body>
+</html>

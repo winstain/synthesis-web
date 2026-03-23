@@ -1,0 +1,28 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="round">
+      <rect width="1024" height="1024" rx="220" ry="220" />
+    </clipPath>
+    <filter id="blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="72" />
+    </filter>
+    <radialGradient id="base" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 512) rotate(90) scale(760)">
+      <stop stop-color="#FCFCFD"/>
+      <stop offset="1" stop-color="#F5F5F4"/>
+    </radialGradient>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="1024" height="1024" fill="url(#base)"/>
+
+    <!-- restrained stripe-like wash -->
+    <circle cx="260" cy="250" r="220" fill="#9B8CFF" fill-opacity="0.22" filter="url(#blur)"/>
+    <circle cx="760" cy="240" r="220" fill="#7FC4FF" fill-opacity="0.18" filter="url(#blur)"/>
+    <circle cx="310" cy="760" r="220" fill="#FFBE9D" fill-opacity="0.16" filter="url(#blur)"/>
+    <circle cx="760" cy="760" r="210" fill="#A5E7C8" fill-opacity="0.14" filter="url(#blur)"/>
+
+    <!-- minimal S mark -->
+    <path d="M638 345C603 316 557 300 505 300C420 300 360 343 360 407C360 460 397 492 466 507L548 525C606 538 634 561 634 604C634 656 586 692 517 692C454 692 403 671 365 633" stroke="#111111" stroke-width="78" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M386 688C423 722 480 744 546 744C635 744 700 698 700 627C700 571 660 536 586 520L504 502C454 492 428 470 428 433C428 386 472 352 536 352C591 352 638 372 675 406" stroke="#111111" stroke-width="78" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
